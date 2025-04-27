@@ -29,14 +29,30 @@ public class SimpleSauceTreeComponentFactory
 	}
 
 	@Override
+	public SauceStatement newCheeseStatement (
+		SauceCheeseElement cheeseElement,
+		int line,
+		int column) {
+
+		SauceStatement statement = new SauceStatement ();
+		statement.setPosition (line, column);
+
+		cheeseElement.statements.add (statement);
+
+		return statement;
+	}
+
+	@Override
 	public SauceSingularElement newSingularElement (
 		SauceStatement statement,
 		String value,
+		String tag,
 		int line,
 		int column) {
 
 		SauceSingularElement element = new SauceSingularElement ();
 		element.value = value;
+		element.tag = tag;
 		element.setPosition (line, column);
 
 		statement.elements.add (element);
@@ -67,7 +83,7 @@ public class SimpleSauceTreeComponentFactory
 		SauceTree block = new SauceTree ();
 		block.setPosition (line, column);
 
-		statement.block = block;
+		statement.bodyBlock = block;
 
 		return block;
 	}

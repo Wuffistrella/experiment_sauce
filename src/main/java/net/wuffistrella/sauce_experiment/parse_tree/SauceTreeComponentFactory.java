@@ -12,9 +12,15 @@ public interface SauceTreeComponentFactory {
 		int line,
 		int column);
 
+	SauceStatement newCheeseStatement (
+		SauceCheeseElement cheeseElement,
+		int line,
+		int column);
+
 	SauceSingularElement newSingularElement (
 		SauceStatement statement,
 		String value,
+		String tag,
 		int line,
 		int column);
 

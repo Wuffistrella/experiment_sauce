@@ -7,7 +7,7 @@ import net.wuffistrella.sauce_experiment.exceptions.SauceParseError;
  */
 public interface SauceLexemeSource {
 
-	void nextLexeme (
+	boolean nextLexeme (
 		SauceLexeme out)
 		throws SauceParseError;
 

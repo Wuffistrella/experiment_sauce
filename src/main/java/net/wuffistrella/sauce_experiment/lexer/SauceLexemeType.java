@@ -20,8 +20,8 @@ public enum SauceLexemeType {
 	CheeseOpenDelimiter,
 	CheeseCloseDelimiter,
 
-	BlockOpenDelimiter,
-	BlockCloseDelimiter,
+	BodyBlockOpenDelimiter,
+	BodyBlockCloseDelimiter,
 
 	StatementTerminator,
 

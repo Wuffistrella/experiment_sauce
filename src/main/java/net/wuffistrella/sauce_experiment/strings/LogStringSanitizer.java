@@ -1,11 +1,11 @@
-package net.wuffistrella.sauce_experiment.exceptions;
+package net.wuffistrella.sauce_experiment.strings;
 
 import java.util.Arrays;
 
 /**
  *
  */
-public class ErrorMessageSanitizer {
+public class LogStringSanitizer {
 
 	public static String sanitize (
 		String string) {

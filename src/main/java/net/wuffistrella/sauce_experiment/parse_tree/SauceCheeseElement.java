@@ -8,8 +8,11 @@ import java.util.ArrayList;
 public class SauceCheeseElement
 	extends SauceElement {
 
+	public int endLine;
+	public int endColumn;
+
 	// TODO convert into linked list
-	private final ArrayList<SauceStatement> statements =
+	public final ArrayList<SauceStatement> statements =
 		new ArrayList<> ();
 
 	/**

@@ -1,6 +1,6 @@
 package net.wuffistrella.sauce_experiment.lexer;
 
-import net.wuffistrella.sauce_experiment.exceptions.ErrorMessageSanitizer;
+import net.wuffistrella.sauce_experiment.strings.LogStringSanitizer;
 import net.wuffistrella.sauce_experiment.exceptions.SauceParseError;
 import net.wuffistrella.sauce_experiment.exceptions.SauceParseErrorFactory;
 import net.wuffistrella.sauce_experiment.exceptions.SauceParseErrorType;
@@ -22,8 +22,8 @@ public class SauceLexer
 	private final IrrelevantInputHandler irrelevantInputHandler;
 	private final SauceParseErrorFactory errorFactory;
 
-	private final StringPosition lexemeStartPosition
-		= new StringPosition ();
+	private final StringPosition lexemeStartPosition =
+		new StringPosition ();
 
 	private final StringPosition possibleTerminatorPosition =
 		new StringPosition ();
@@ -65,7 +65,7 @@ public class SauceLexer
 		try {
 			((ReusableStringCursor) inputCursor).setInputString (inputString);
 
-		} catch (ClassCastException) {
+		} catch (ClassCastException e) {
 			throw new StringCursorNotReusableException (
 				"The string cursor of the lexer is not reusable."
 			);
@@ -73,103 +73,117 @@ public class SauceLexer
 	}
 
 	@Override
-	public void nextLexeme (
+	public boolean nextLexeme (
 		SauceLexeme out)
 		throws SauceParseError {
 
-		lexemeRawContentBuilder.reset ();
-		lexemeValueContentBuilder.reset ();
+		try {
+			lexemeRawContentBuilder.reset ();
+			lexemeValueContentBuilder.reset ();
 
-		irrelevantInputHandler.skipIrrelevantInput (inputCursor);
+			irrelevantInputHandler.skipIrrelevantInput (inputCursor);
 
-		int codePoint = inputCursor.getCurrentCodePoint ();
-		inputCursor.getCurrentPosition (lexemeStartPosition);
-
-		switch (codePoint) {
-		case StringPosition.STRING_END -> {
-			out.type = SauceLexemeType.CodeEnd;
-			out.setContentToNone ();
-			out.setPosition (
-				inputCursor.getCurrentLine (),
-				inputCursor.getCurrentColumn ()
-			);
-			return;
-		}
-
-		case '.' -> {
-			out.type = SauceLexemeType.StatementTerminator;
-			out.setContentToNone ();
-
-			inputCursor.moveToNextCodePoint ();
-			codePoint = inputCursor.getCurrentCodePoint ();
+			int codePoint = inputCursor.getCurrentCodePoint ();
+			inputCursor.getCurrentPosition (lexemeStartPosition);
 
 			switch (codePoint) {
-			case StringPosition.STRING_END,
-				'(',
-				')',
-				'{',
-				'}' -> {
-				// noop
+			case StringPosition.STRING_END -> {
+				out.type = SauceLexemeType.CodeEnd;
+				out.setContentToNone ();
+				out.setPosition (
+					inputCursor.getCurrentLine (),
+					inputCursor.getCurrentColumn ()
+				);
+				return false;
+			}
+
+			case '.' -> {
+				out.type = SauceLexemeType.StatementTerminator;
+				out.setContentToNone ();
+
+				inputCursor.moveToNextCodePoint ();
+				codePoint = inputCursor.getCurrentCodePoint ();
+
+				switch (codePoint) {
+				case StringPosition.STRING_END,
+					'(',
+					')',
+					'{',
+					'}' -> {
+					// noop
+				}
+
+				default -> {
+					if (!irrelevantInputHandler
+						.isAtStartOfIrrelevantInput (inputCursor)) {
+
+						lexemeRawContentBuilder.append (".");
+						readRestOfWord (out);
+					}
+				}
+				}
+			}
+
+			case '(' -> {
+				inputCursor.moveToNextCodePoint ();
+
+				out.type = SauceLexemeType.CheeseOpenDelimiter;
+				out.setContentToNone ();
+			}
+
+			case ')' -> {
+				inputCursor.moveToNextCodePoint ();
+
+				out.type = SauceLexemeType.CheeseCloseDelimiter;
+				out.setContentToNone ();
+			}
+
+			case '{' -> {
+				inputCursor.moveToNextCodePoint ();
+
+				out.type = SauceLexemeType.BodyBlockOpenDelimiter;
+				out.setContentToNone ();
+			}
+
+			case '}' -> {
+				inputCursor.moveToNextCodePoint ();
+
+				out.type = SauceLexemeType.BodyBlockCloseDelimiter;
+				out.setContentToNone ();
+			}
+
+			case '\'', '\"', '`' -> {
+				lexemeRawContentBuilder.appendCodePoint (codePoint);
+				inputCursor.moveToNextCodePoint ();
+				readRestOfString (out, codePoint, null);
+			}
+
+			case '<' -> {
+				inputCursor.moveToNextCodePoint ();
+				readRestOfRawString (out);
 			}
 
 			default -> {
-				if (!irrelevantInputHandler
-					.isAtStartOfIrrelevantInput (inputCursor)) {
-
-					lexemeRawContentBuilder.append (".");
-					readRestOfWord (out);
-				}
+				lexemeRawContentBuilder.appendCodePoint (codePoint);
+				inputCursor.moveToNextCodePoint ();
+				readRestOfWord (out);
 			}
 			}
+
+			out.setPosition (lexemeStartPosition);
+			return true;
+
+		} catch (SauceParseError parseError) {
+			throw parseError;
+
+		} catch (Exception otherException) {
+			throw errorFactory.createExceptionObject (
+				SauceParseErrorType.UnknownError,
+				otherException,
+				inputCursor.getCurrentLine (),
+				inputCursor.getCurrentColumn ()
+			);
 		}
-
-		case '(' -> {
-			inputCursor.moveToNextCodePoint ();
-
-			out.type = SauceLexemeType.CheeseOpenDelimiter;
-			out.setContentToNone ();
-		}
-
-		case ')' -> {
-			inputCursor.moveToNextCodePoint ();
-
-			out.type = SauceLexemeType.CheeseCloseDelimiter;
-			out.setContentToNone ();
-		}
-
-		case '{' -> {
-			inputCursor.moveToNextCodePoint ();
-
-			out.type = SauceLexemeType.BlockOpenDelimiter;
-			out.setContentToNone ();
-		}
-
-		case '}' -> {
-			inputCursor.moveToNextCodePoint ();
-
-			out.type = SauceLexemeType.BlockCloseDelimiter;
-			out.setContentToNone ();
-		}
-
-		case '\'', '\"', '`' -> {
-			lexemeRawContentBuilder.appendCodePoint (codePoint);
-			inputCursor.moveToNextCodePoint ();
-			readRestOfString (out, codePoint, null);
-		}
-
-		case '<' -> {
-			inputCursor.moveToNextCodePoint ();
-			readRestOfRawString (out);
-		}
-
-		default -> {
-			lexemeRawContentBuilder.appendCodePoint (codePoint);
-			inputCursor.moveToNextCodePoint ();
-			readRestOfWord (out);
-		}
-		}
-
-		out.setPosition (lexemeStartPosition);
 	}
 
 	private void readRestOfWord (
@@ -347,7 +361,7 @@ public class SauceLexer
 		default -> {
 			throw new IllegalArgumentException (
 				"Invalid open delimiter: ["
-					+ ErrorMessageSanitizer.asSanitized (openDelimiterCodePoint)
+					+ LogStringSanitizer.asSanitized (openDelimiterCodePoint)
 					+ "]."
 			);
 		}

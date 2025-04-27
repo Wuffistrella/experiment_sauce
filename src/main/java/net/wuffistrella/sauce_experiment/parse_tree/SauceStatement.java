@@ -8,6 +8,9 @@ import java.util.ArrayList;
 public class SauceStatement
 	extends SauceTreeComponent {
 
+	public int endLine;
+	public int endColumn;
+
 	/**
 	 * Elements in statement.
 	 */
@@ -15,11 +18,6 @@ public class SauceStatement
 	public final ArrayList<SauceElement> elements =
 		new ArrayList<> ();
 
-	/**
-	 * Block of statement.
-	 * <p>
-	 * Is null if statement has no block.
-	 */
-	public SauceTree block;
+	public SauceTree bodyBlock;
 
 }

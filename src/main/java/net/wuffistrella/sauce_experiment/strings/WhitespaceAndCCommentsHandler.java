@@ -44,9 +44,12 @@ public class WhitespaceAndCCommentsHandler
 					SkipRestOfLine:
 					while (true) {
 						switch (inputCursor.getCurrentCodePoint ()) {
+						default -> {
+							inputCursor.moveToNextCodePoint ();
+						}
+
 						case '\n' -> {
 							// TODO handle other line end characters
-							inputCursor.moveToNextCodePoint ();
 							break SkipRestOfLine;
 						}
 

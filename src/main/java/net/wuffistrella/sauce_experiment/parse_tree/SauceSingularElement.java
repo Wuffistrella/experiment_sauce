@@ -20,4 +20,6 @@ public class SauceSingularElement
 	 */
 	public String value;
 
+	public String tag;
+
 }

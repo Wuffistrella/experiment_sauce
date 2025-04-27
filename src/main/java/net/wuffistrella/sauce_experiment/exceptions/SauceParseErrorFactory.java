@@ -63,13 +63,25 @@ public class SauceParseErrorFactory {
 
 		String errorDescription;
 		switch (type) {
-		case UnknownError, default -> {
+		default -> {
 			errorDescription =
 				"Unknown parse error.";
+		}
+		case InWord_Tag -> {
+			errorDescription =
+				"Attempt to tag word.";
 		}
 		case InString_InvalidEscapeCode -> {
 			errorDescription =
 				"String contains invalid escape code.";
+		}
+		case InString_UnexpectedTag -> {
+			errorDescription =
+				"Unexpected tag in string.";
+		}
+		case InString_NoTag -> {
+			errorDescription =
+				"Missing string tag.";
 		}
 		case InRawString_MalformedOpenDelimiter -> {
 			errorDescription =
@@ -78,6 +90,11 @@ public class SauceParseErrorFactory {
 		case InRawString_MalformedCloseDelimiter -> {
 			errorDescription =
 				"Raw string has malformed close delimiter.";
+		}
+		case InRawString_NoTag -> {
+			errorDescription =
+				"Missing raw string delimiter tag";
+
 		}
 		case AtCodeEnd_NoStringCloseQuote -> {
 			errorDescription =
@@ -91,9 +108,22 @@ public class SauceParseErrorFactory {
 			errorDescription =
 				"Missing body block close delimiter.";
 		}
+		case AtTopLevel_UnexpectedCheeseCloseDelimiter -> {
+			errorDescription =
+				"Unexpected cheese close delimiter at top level.";
+		}
 		case AtTopLevel_UnexpectedBodyBlockCloseDelimiter -> {
 			errorDescription =
-				"Unexpected body block close delimiter.";
+				"Unexpected body block close delimiter at top level.";
+		}
+		case InNestedBlock_UnexpectedCheeseCloseDelimiter -> {
+			errorDescription =
+				"Unexpected cheese close delimiter in nested block.";
+		}
+		case InNestedBlock_UnexpectedBodyBlockCloseDelimiter -> {
+			errorDescription =
+				"Unexpected body block close delimiter in nested block.";
+
 		}
 		}
 
